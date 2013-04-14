@@ -1,0 +1,5 @@
+.output{color:red}
+.even_row {background-color:#cccccc;border-width:0}
+.odd_row {background-color:#eeeeee;border-width:0}
+.generation{width:100%;border-style:hidden;border-collapse:collapse;font-family:"Lucida Console"}
+.clickable{color:blue;text-decoration:underline}
