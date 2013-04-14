@@ -1,64 +1,93 @@
 var children=[]
 
-var target = "hello world";
-var mutation_threshold = .8;
-var generation_size = 50;
-var sexual_reproduction = true;
+var target = "Hello, world!";
+var mutation_threshold = .1;
+var generation_size = 100;
 var check_for_dups = true;
+var age_threshold = 2;
 
-var generation_count = 0;
+var generation_count = 1; // set to 1 to account for the magic "seed" generation
 var entity_count = 0;
-var matched_generation = -1;
 
+String.prototype.reverse=function(){
+	return this.split("").reverse().join("");
+}
+
+/*
+ * generate 2 numbers that are non-equal points in a string
+ */
 function generate_splits(s) {
 	do {
 		var length = s.length;
 		var splits = [ Math.floor(Math.random()*length), Math.floor(Math.random()*length) ];
-	} while (splits[0] == splits[1]);
+	} while (splits[0] == splits[1] && s.length != 0);
 	splits.sort(numberSorter);
 	return splits;
 }
 
+/*
+ * replace a section of the string with randomly generated code of the same length as the originally selected section
+ */
 function mutate_replace(s) {
 	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[1])
+	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[1])	
 	return s;
 }
 
+/*
+ * insert a sequence randomly generated code and then truncate the string to its original length
+ */
 function mutate_insert(s) {
 	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[1]).substring(0,s.length);
+	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[0]).substring(0,s.length);
 	return s;
 }
 
+/*
+ * insert a sequence of randomly generated code, allowing the string to grow
+ */
 function mutate_grow(s) {
 	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[1])
+	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[0]);	
 	return s;
 }
 
+/*
+ * remove a sequence of characters from the string
+ */
 function mutate_shrink(s) {
 	var splits = generate_splits(s);
-	s=s.substring(0, splits[0])  + s.substring(splits[1])
+	s=s.substring(0, splits[0])  + s.substring(splits[1])	
 	return s;
 }
 
+/*
+ * remove a sequence of characters from the string and replace them with a randomly generated sequence of a likely different length
+ */
 function mutate_grow_or_shrink(s) {
 	var splits = generate_splits(s);
 	var splits2 = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits2[1]-splits2[0]) + s.substring(splits[1])
+	s=s.substring(0, splits[0]) + generateRandomCode(splits2[1]-splits2[0]) + s.substring(splits[1])	
 	return s;
 }
 
-var mutations = [ mutate_replace, mutate_insert, mutate_grow, mutate_shrink, mutate_grow_or_shrink ];
+/*
+ * replace a sequence of characters with their reversal
+ */
+function mutate_reverse(s) {
+	var splits = generate_splits(s);
+	s=s.substring(0, splits[0]) + s.substring(splits[0],splits[1]).reverse() + s.substring(splits[1]);
+	return s;
+}
+
+//var mutations = [ mutate_replace, mutate_insert, mutate_grow, mutate_shrink, mutate_grow_or_shrink, mutate_reverse ];
+var mutations = [ mutate_grow, mutate_shrink, mutate_grow_or_shrink ];
 var mutations_size = mutations.length;
 
 
 function mutate(s) {
-	var iterations = 1.0;
-	while (Math.random() < (mutation_threshold/iterations)) {
+	if (Math.random() < mutation_threshold) {
 		return mutations[Math.floor(Math.random() * mutations_size)](s);
-		iterations /= 2.0
 	}
 	return s;
 }
@@ -75,6 +104,9 @@ function addChild(child) {
 }
 
 function entitySorter(e1, e2) {
+	if (e1.age != e2.age) {
+		return e1.age - e2.age;
+	}
 	return e1.fitness - e2.fitness;
 }
 
@@ -82,211 +114,147 @@ function numberSorter(e1, e2) {
 	return e1 - e2;
 }
 
-function offspring(s1, s2) {
-
-	if (sexual_reproduction) {
-		var length = Math.max(s1.length, s2.length);
-
-		do {
-			var splits = [ Math.floor(Math.random()*length), Math.floor(Math.random()*length) ];
-		} while (splits[0] == splits[1]);
-
-		splits.sort(numberSorter);
-
-		var rv = [ mutate(s1.substring(0, splits[0]) + s2.substring(splits[0],splits[1]) + s1.substring(splits[1])),
-		mutate(s2.substring(0, splits[0]) + s1.substring(splits[0],splits[1]) + s2.substring(splits[1])) ];
-		return rv;
-	} 
-	return [ mutate(s1), mutate(s2) ];
-}
-
-function doGeneration() {
-	children.sort(entitySorter);
-	if (children.length > generation_size) {
-		children.length = generation_size;
-	}
-
-	postMessage({type:"generation",data:children});
-
-	var size = children.length;
-
-	for (var i=0; i<size/2; i++) {
-		do {
-			var index = [ Math.random() * children.length,
-			Math.random() * children.length,
-			Math.random() * children.length,
-			Math.random() * children.length
-			];
-			var i1 = Math.floor(index[0]<=index[1]?index[0]:index[1]);
-			var i2 = Math.floor(index[2]<=index[3]?index[2]:index[3]);
-
-			if (children.length == 2) {
-				i1=0;
-				i2=1;
-			}
-		} while (i1 == i2);
-
-		var c = offspring(children[i1].code, children[i2].code);
-		for (var j=0; j<c.length; j++) {
-			addChild(evaluate(c[j]));
-		}
-	}
-
-	generation_count++;
-
-	if (matched_generation <= 0)
-	if (children[0].output == target) {
-		matched_generation = generation_count;
-		reportStats();
-		postMessage({type:"match",data:{target: target, generation_count: matched_generation}});
-	}
-}
-
 function evaluate(_code) {
 	entity_count++;
 	var _output = bf_interpret(_code, "");
-	// var _fitness = stringDistance(_output, target) + codeAnalysisWeight(_code) + frequencyAnalysisWeight(_output);
-	var _fitness = stringDistance(_output, target) + (1-(1/codeAnalysisWeight(_code))); 
-	return {code:_code, output:_output, fitness:_fitness};
-}
-
-var maxsoukoreff_frequency = 0.186550;
-
-var soukoreff_frequency = { 
-	" ":    0.186550,
-	"e":    0.108321,
-	"t":    0.079711,
-	"a":    0.066101,
-	"h":    0.062808,
-	"o":    0.053881,
-	"s":    0.049366,
-	"n":    0.048965,
-	"r":    0.047798,
-	"i":    0.041987,
-	"l":    0.036380,
-	"d":    0.035168,
-	"u":    0.024981,
-	"w":    0.023349,
-	"m":    0.020149,
-	"c":    0.019151,
-	"g":    0.017733,
-	"y":    0.017043,
-	"f":    0.014561,
-	"b":    0.013218,
-	"p":    0.012472,
-	"k":    0.008703,
-	"v":    0.008059,
-	"j":    0.001296,
-	"x":    0.001119,
-	"q":    0.000615,
-	"z":    0.000503
-};
-
-function frequencyAnalysisWeight(output) {
-	// higher means less desirable...
-
-	var score = 0;
-	for (var i=0; i<output.length; ++i) {
-		var thisscore = soukoreff_frequency[output[i].toLowerCase()];
-		if (thisscore != null)
-		score += thisscore;
-	}
-
-	return (output.length - score / maxsoukoreff_frequency);
-}
-
-function codeAnalysisWeight(code) {
-	// higher means less desirable...
-	return Math.sqrt(code.length);
+	// var _fitness = stringDistance(_output, target) + ( 1 - ( 1 / _code.length));
+	var _fitness = stringDistance(_output, target) + (Math.sqrt(_code.length)); //- Math.log(1/_code.length);
+	return {code:_code, output:_output, fitness:_fitness, age:0 };
 }
 
 function stringDistancePositionWeight(pos, targetlen) {
-	// higher means more important...
-
-	// this converges to 'hello world' ...
-	var root = 5; return (pos < targetlen) ? Math.pow(root, targetlen - pos) : root;
-
-	// 7 gets stuck at "hello vszz%7D"
-	//var root = 6; return (pos < targetlen) ? Math.pow(root, targetlen - pos) : root;
+	var root = 9; //5 // 1.5
+	//return (pos < targetlen) ? Math.pow(root, targetlen - pos) : root;
+	//return Math.pow(root, Math.abs(targetlen - pos));
+	return (pos < targetlen) ? Math.pow(root, targetlen - pos) : root + Math.sqrt(pos - targetlen);
 }
 
 function stringDistance(s1, s2) {
 	var rv = 0;
 	var n = Math.min(s1.length, s2.length);
-	var x = Math.max(s1.length, s2.length);
+	var x = Math.max(s1.length, s2.length) + 1;
 	var delta;
 	var i;
-
+	
 	for (i=0; i<n; i++) {
 		delta = s1.charCodeAt(i) - s2.charCodeAt(i);
 		delta = delta * delta;
 		rv += delta * stringDistancePositionWeight(i, s2.length);
 	}
 
-	delta = 256; // maximum excursion
-	delta = delta * delta;
-	for (; i<x; i++) {
+	for (; i<x-1; i++) {
+		delta = 256; // maximum excursion
+		delta = delta * delta;
 		rv += delta * stringDistancePositionWeight(i, s2.length);
 	}
+	return rv;
+}
 
+function offspring(s1, s2) {
+	if (Math.random() > 0.5) {
+		tmp=s1;
+		s1=s2;
+		s2=tmp;
+	}
+	var split = Math.floor(Math.random()*Math.min(s1.length, s2.length));
+	var rv = [ mutate(s1.substring(0, split) + s2.substring(split)) ];
+	return rv;
+}
+
+function doGeneration() {
+	// rank by fitness
+	children.sort(entitySorter);
+	
+	// account for entity TTL
+	// children = children.filter(function(c) { return c.age < age_threshold; });
+	children = children.map(function(c) { c.age++; return c; });
+	
+	
+	// enforce generational size limit
+	if (children.length > generation_size) {
+		children.length = generation_size;
+	}
+	
+
+	// let the UI know
+	var c = children.slice(0,10);
+	postMessage({type:"generation",data:c});
+	
+	var size = children.length;
+	
+	for (var i=0; i<size; i++) {
+		do {
+			var i1 = Math.floor(Math.random()*(size/10) );
+			var i2 = Math.floor(Math.random()*size);
+			
+			if (children.length == 2) {
+				i1=0;
+				i2=1;
+			}
+		} while (i1 == i2);
+					
+		var c = offspring(children[i1].code, children[i2].code);
+		for (var j=0; j<c.length; j++) {
+			addChild(evaluate(c[j]));
+		}
+	}
+	generation_count++;
+}	
+
+function safeCharCodeAt(s, i) {
+	var rv = 0;
+	if (i<s.length) {
+		rv = s.charCodeAt(i);
+	}
 	return rv;
 }
 
 var legal=".,+-<>[]";
 var legallength = legal.length;
-var a2 = new Array();
+var c = new Array();
 
 function generateRandomCode(l) {
-	/*
-var rv = "";
-for (var i=0; i<l; i++) {
-rv += legal.charAt(Math.random()*legallength);
-}
-return rv;
-*/
 	for (var i=0; i<l; ++i) {
-		a2[i] = legal.charAt(Math.random()*legallength);
+		c[i] = legal.charAt(Math.random()*legallength);
 	}
-	a2.length = l;
-	return a2.join("");
+	c.length = l;
+	return c.join("");
 }
 
-
-
-var mem_size = 30000;
+var mem_size = 30000; // given that instructionCount clips us to 10000 cycles, 30000 seems a tad ridiculous
 var max_val = 255;
-var a = new Array(mem_size);
+var a = [];
 
 function bf_interpret(prog, params) {
+		
 	var instructionCount = 10000;
-
-	var i;
+	
+    var i;
 	for (i = 0; i < mem_size; i++) {
 		a[i]=0;
 	}
 
-	var p = 0;
-	var l = 0;
-	var argi = 0;
+    var p = 0;
+    var l = 0;
+    var argi = 0;
 
-	var result = '';
+    var result = '';
 
-	//postMessage({type:"INFO",data:prog});
-
-	for (i = 0; i < prog.length && instructionCount > 0; i++, instructionCount--) {
-		//console.log(i+":"+prog.charAt(i)+":"+result);
-		switch (prog.charAt(i)) {
+    for (i = 0; i < prog.length && instructionCount > 0; i++, instructionCount--) {
+	switch (prog.charAt(i)) {
 		case ">":
 			p++; p %= mem_size;
 			break;
 		case "<":
 			p--; p %= mem_size;
+			if (p<0) p = mem_size + p;
 			break;
 		case "+":
 			a[p]++; a[p] %= max_val;
 			break;
 		case "-":
 			a[p]--; a[p] %= max_val;
+			if (a[p]<0) a[p] = max_val + a[p];
 			break;
 		case ".":
 			result += String.fromCharCode(a[p]); 
@@ -296,7 +264,7 @@ function bf_interpret(prog, params) {
 			argi++;
 			break;
 		case "[":
-			if (a[p] === 0) {
+			if (a[p] == 0) {  // TODO: why use === here instead of ==? did i mean to do that?
 				for (i++; l > 0 || prog.charAt(i) != ']'; i++) {
 					if (i>=prog.length) {
 						l=0;
@@ -313,29 +281,30 @@ function bf_interpret(prog, params) {
 				}
 			}
 			break;
-		case "]":
-			for (i--; l > 0 || prog.charAt(i) != '['; i--) {
-				if (i<0) {
-					l=0;
-					instructionCount = 0;
-					break;
-				} else {
-					if (prog.charAt(i) == ']') {
-						l++;
-					}
-					if (prog.charAt(i) == '[') {
-						l--;
+		case "]":  // TODO: reread bf spec to ensure this behavior is right (shouldn't I have checked a[p] !=0 ?)
+			if (a[p] != 0) { 
+				for (i--; l > 0 || prog.charAt(i) != '['; i--) {
+					if (i<0) {
+						l=0;
+						instructionCount = 0;
+						break;
+					} else {
+						if (prog.charAt(i) == ']') {
+							l++;
+						}
+						if (prog.charAt(i) == '[') {
+							l--;
+						}
 					}
 				}
-
 			}
 
 			i--;
 			break;
 		}
-	}
+    }
 
-	return result;
+    return result;
 }
 
 var calculation_interval = null;
@@ -344,27 +313,25 @@ var seeded = false;
 var step_mode = false;
 
 onmessage = function(e){
-	if (e.data === "stop" || (e.data === "start" && (calculation_interval != null))) {
+  if ( e.data === "start" ) {
+	if (calculation_interval == null) {
+		if (!seeded) {
+			seed();
+			seeded = true;
+		}
+		if (step_mode) {
+			setTimeout(doGeneration, 1);
+		}  else {
+			calculation_interval = setInterval(doGeneration, 100);
+		}
+		stats_interval = setInterval(reportStats,10000);
+	} else {
 		clearInterval(calculation_interval);
 		calculation_interval = null;
 		clearInterval(stats_interval);
 		stats_interval = null;
 	}
-	else
-	if ( e.data === "start" ) {
-		if (calculation_interval == null) {
-			if (!seeded) {
-				seed();
-				seeded = true;
-			}
-			if (step_mode) {
-				setTimeout(doGeneration, 1);
-			}  else {
-				calculation_interval = setInterval(doGeneration, 100);
-			}
-			stats_interval = setInterval(reportStats,10000);
-		}
-	}  
+  }
 };
 
 function seed() {
@@ -375,4 +342,11 @@ function seed() {
 
 function reportStats() {
 	postMessage({type:"stats",data: { generation_count: generation_count, entity_count: entity_count } });
+}
+
+
+function doTest() {
+	var testCode = generateRandomCode(Math.floor(Math.random()*250));
+	bf_interpret(testCode,"");
+	console.log(Date());
 }

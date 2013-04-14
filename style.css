@@ -1,5 +1,40 @@
-.output{color:red}
+.output,.outputheader{
+	width:20%; 
+	text-overflow:ellipsis;
+	overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.output {
+	color:red; 
+}
+
+.count{
+	width:5%; 
+	text-overflow:ellipsis;
+	overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.fitness{
+	width:15%; 
+	text-overflow:ellipsis;
+	overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
 .even_row {background-color:#cccccc;border-width:0}
 .odd_row {background-color:#eeeeee;border-width:0}
-.generation{width:100%;border-style:hidden;border-collapse:collapse;font-family:"Lucida Console"}
+
+.generation{
+	width:100%;
+	border-style:hidden;
+	border-collapse:collapse;
+	font-family:"Lucida Console";
+	table-layout:fixed;
+}
+
 .clickable{color:blue;text-decoration:underline}

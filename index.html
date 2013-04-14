@@ -2,105 +2,89 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-	<title>JS BF - Hello World</title>
-	<link rel="stylesheet" type="text/css" href="style.css" />
-	<script type="text/javascript" src="jsworker-2.0.js"> </script>
-	<script type="text/javascript" src="hello.js"> </script>
+    <title>JS BF - </title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script type="text/javascript" src="jsworker-2.0.js"> </script>
+    <script type="text/javascript" src="hello.js"> </script>
     <script type="text/javascript">
-		var onmessage = function(e){
-			if (e.data.type === "generation") {
-				displayEntities(e.data.data);
-				updateFittest(e.data.data);
-			} else if ( e.data.type === "stats" ) {
-				displayStats(e.data.data);
-			} else {
-				console.log(e.data);
-			}
-		};
-		
-		var onerror = function(e) {
-			console.log(e);
-		}
-		
-		var worker = JsWorker.createWorkerFromUrl("hello.js", onmessage, onerror);
-		window.onload = function() {
-			worker.postMessage("start");
-			setupChart();
-		}
-		
+        var onmessage = function(e){
+            if (e.data.type === "generation") {
+                displayEntities(e.data.data);
+                updateFittest(e.data.data);
+            } else if ( e.data.type === "stats" ) {
+                displayStats(e.data.data);
+            } else {
+                console.log(e.data);
+            }
+        };
+        
+        var onerror = function(e) {
+            console.log(e);
+        }
+        
+        var worker = JsWorker.createWorkerFromUrl("hello.js", onmessage, onerror);
+        window.onload = function() {
+            worker.postMessage("start");
+        }
+        
+        function displayEntities(e) {
+            var t = "<table class='generation'><tr><td class='count'>Count</td><td class='fitness'>Fitness</td><td class='outputheader'>Output</td><td class='code'>Code</td></tr>";
+            
+            if (e.length > 40) {
+                e.length = 40;
+            }
+            
+            for (i=0; i<e.length; i++) {
+                var c = (i%2==0) ? "even_row" : "odd_row";
+                t += "<tr class='" + c + "'><td>"+ i +"</td><td>" + roundedDisplay(e[i].fitness) + "</td><td class='output'>" + safeDisplay(e[i].output) + "</td><td>" + e[i].code + "</td></tr>";
+            }
+            
+            t += "</table>";
+            
+            document.getElementById("Generation").innerHTML = t;
+        }
+        
+        function displayStats(s) {
+            document.getElementById("entity_count").innerHTML = s.entity_count;
+            document.getElementById("generation_count").innerHTML = s.generation_count;
+        }
+        
+        function safeDisplay(s) {
+            rv = encodeURI(s);
+            rv = rv.replace(/%20/g," ");
+            if (false && rv.length>20) {
+                rv = rv.substring(0,20) + "...";
+            }
+            return rv;
+        }
+        
+        function roundedDisplay(f) {
+            f = Math.round(f * 1000)/1000;
+            return f;
+        }
 
-		function displayEntities(e) {
-			var t = "<table class='generation'><tr><td>Count</td><td>Fitness</td><td>Output</td><td>Code</td></tr>";
-			for (i=0; i<e.length; i++) {
-				
-				var c = (i%2==0) ? "even_row" : "odd_row";
-				t += "<tr class='" + c + "'><td>"+ i +"</td><td>" + roundedDisplay(e[i].fitness) + "</td><td class='output'>" + safeDisplay(e[i].output) + "</td><td>" + e[i].code + "</td></tr>";
-			}
-			t += "</table>";
-			
-			document.getElementById("Generation").innerHTML = t;
-		}
-		
-		function displayStats(s) {
-			document.getElementById("entity_count").innerHTML = s.entity_count;
-			document.getElementById("generation_count").innerHTML = s.generation_count;
-		}
-		
-		function safeDisplay(s) {
-			rv = encodeURI(s);
-			rv = rv.replace(/%20/g," ");
-			return rv;
-		}
-		
-		function roundedDisplay(f) {
-			f = Math.round(f * 1000)/1000;
-			return f;
-		}
-	</script>
-	
-	<script type='text/javascript' src='https://www.google.com/jsapi'></script>
-    <script type='text/javascript'>
-		google.load('visualization', '1', {'packages':['annotatedtimeline']});
-		google.setOnLoadCallback(drawChart);
-		
-		var chart;
-		var fittest;
-		var data;
-		
-		function setupChart() {
-			chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
-			fittest = Number.MAX_VALUE;
-			data = new google.visualization.DataTable();
-			data.addColumn('datetime', 'Date');
-			data.addColumn('number', 'Fitness');
-			data.addColumn('string', 'Output');
-			data.addColumn('string', 'Code');
-		}
-		
-		function updateFittest(e) {
-			if (e[0].fitness < fittest) {
-				data.addRows([
-				  [e[0].timestamp, e[0].fitness, "" + e[0].fitness, safeDisplay(e[0].output)]
-				]);	
-				drawChart();
-				fittest = e[0].fitness;
-				document.title = target +  " : " + fittest;
-			}
-		}
-		
-		function drawChart() {	
-			chart.draw(data, {displayAnnotations: false, displayExactValues: true, 
-			                  annotationsWidth: 15, displayRangeSelector: false });
-		}
+        var fittest = Number.MAX_VALUE;
+        
+        function updateFittest(e) {
+            if (e[0].fitness < fittest) {
+                fittest = e[0].fitness;
+                document.title = target +  " : " + fittest;
+            }
+            
+            // stop if we match
+            if (false && e[0].output == target) {
+                worker.postMessage('start');
+            }
+        }
+        
     </script>
   </head>
   <body>
     <div id="PopulationControl">
     </div>
-    <div id='chart_div' style='width: 100%; height: 440px;'></div>
     <div id="GenerationControl">
       <span class="clickable" id="threadToggle" onclick="worker.postMessage('start');" color="red"> Stop/Start Thread </span>
-	  Processed <span id= "entity_count">0</span> entities across <span id= "generation_count">0</span> generations.
+      Processed <span id= "entity_count">0</span> entities across <span id= "generation_count">0</span> generations.
     </div>
     <div id="Generation">
       Insert Current Here
