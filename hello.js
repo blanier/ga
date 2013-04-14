@@ -4,7 +4,6 @@ var target = "Hello, world!";
 var mutation_threshold = .1;
 var generation_size = 100;
 var check_for_dups = true;
-var age_threshold = 2;
 
 var generation_count = 1; // set to 1 to account for the magic "seed" generation
 var entity_count = 0;
@@ -264,7 +263,7 @@ function bf_interpret(prog, params) {
 			argi++;
 			break;
 		case "[":
-			if (a[p] == 0) {  // TODO: why use === here instead of ==? did i mean to do that?
+			if (a[p] == 0) {
 				for (i++; l > 0 || prog.charAt(i) != ']'; i++) {
 					if (i>=prog.length) {
 						l=0;
@@ -281,7 +280,7 @@ function bf_interpret(prog, params) {
 				}
 			}
 			break;
-		case "]":  // TODO: reread bf spec to ensure this behavior is right (shouldn't I have checked a[p] !=0 ?)
+		case "]":
 			if (a[p] != 0) { 
 				for (i--; l > 0 || prog.charAt(i) != '['; i--) {
 					if (i<0) {
