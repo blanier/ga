@@ -20,12 +20,12 @@
         
         var onerror = function(e) {
             console.log(e);
-        }
+        };
         
         var worker = JsWorker.createWorkerFromUrl("hello.js", onmessage, onerror);
         window.onload = function() {
             worker.postMessage("start");
-        }
+        };
         
         function displayEntities(e) {
             var t = "<table class='generation'><tr><td class='count'>Count</td><td class='fitness'>Fitness</td><td class='outputheader'>Output</td><td class='code'>Code</td></tr>";
@@ -83,7 +83,7 @@
     <div id="PopulationControl">
     </div>
     <div id="GenerationControl">
-      <span class="clickable" id="threadToggle" onclick="worker.postMessage('start');" color="red"> Stop/Start Thread </span>
+      <span class="clickable" id="threadToggle" onclick="worker.postMessage('start');"> Stop/Start Thread </span>
       Processed <span id= "entity_count">0</span> entities across <span id= "generation_count">0</span> generations.
     </div>
     <div id="Generation">
