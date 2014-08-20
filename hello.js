@@ -1,6 +1,6 @@
 var children=[]
 
-var target = "Hello, world!";
+var target = "hello world";
 var mutation_threshold = .1;
 var generation_size = 100;
 var check_for_dups = true;
