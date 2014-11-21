@@ -16,9 +16,13 @@ String.prototype.reverse=function(){
  * generate 2 numbers that are non-equal points in a string
  */
 function generate_splits(s) {
+  var length = s.length;
+  if (length<5) {
+    return [0, length];
+  }
+  var splits = [];
 	do {
-		var length = s.length;
-		var splits = [ Math.floor(Math.random()*length), Math.floor(Math.random()*length) ];
+		splits = [ Math.floor(Math.random()*length), Math.floor(Math.random()*length) ];
 	} while (splits[0] == splits[1] && s.length != 0);
 	splits.sort(numberSorter);
 	return splits;
