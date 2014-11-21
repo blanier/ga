@@ -1,7 +1,7 @@
 var children=[]
 
-var target = "hello world";
-var mutation_threshold = .1;
+var target = "Hello World";
+var mutation_threshold = .5;
 var generation_size = 100;
 var check_for_dups = true;
 
@@ -116,15 +116,12 @@ function numberSorter(e1, e2) {
 function evaluate(_code) {
 	entity_count++;
 	var _output = bf_interpret(_code, "");
-	// var _fitness = stringDistance(_output, target) + ( 1 - ( 1 / _code.length));
-	var _fitness = stringDistance(_output, target) + (Math.sqrt(_code.length)); //- Math.log(1/_code.length);
+	var _fitness = stringDistance(_output, target) + (Math.sqrt(_code.length));
 	return {code:_code, output:_output, fitness:_fitness, age:0 };
 }
 
 function stringDistancePositionWeight(pos, targetlen) {
 	var root = 9; //5 // 1.5
-	//return (pos < targetlen) ? Math.pow(root, targetlen - pos) : root;
-	//return Math.pow(root, Math.abs(targetlen - pos));
 	return (pos < targetlen) ? Math.pow(root, targetlen - pos) : root + Math.sqrt(pos - targetlen);
 }
 
