@@ -1,6 +1,6 @@
 var children=[]
 
-var target = "Hello World";
+var target = "";
 var mutation_threshold = .5;
 var generation_size = 100;
 var check_for_dups = true;
@@ -33,7 +33,7 @@ function generate_splits(s) {
  */
 function mutate_replace(s) {
 	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[1])	
+	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[1])
 	return s;
 }
 
@@ -51,7 +51,7 @@ function mutate_insert(s) {
  */
 function mutate_grow(s) {
 	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[0]);	
+	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[0]);
 	return s;
 }
 
@@ -60,7 +60,7 @@ function mutate_grow(s) {
  */
 function mutate_shrink(s) {
 	var splits = generate_splits(s);
-	s=s.substring(0, splits[0])  + s.substring(splits[1])	
+	s=s.substring(0, splits[0])  + s.substring(splits[1])
 	return s;
 }
 
@@ -70,7 +70,7 @@ function mutate_shrink(s) {
 function mutate_grow_or_shrink(s) {
 	var splits = generate_splits(s);
 	var splits2 = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits2[1]-splits2[0]) + s.substring(splits[1])	
+	s=s.substring(0, splits[0]) + generateRandomCode(splits2[1]-splits2[0]) + s.substring(splits[1])
 	return s;
 }
 
@@ -135,7 +135,7 @@ function stringDistance(s1, s2) {
 	var x = Math.max(s1.length, s2.length) + 1;
 	var delta;
 	var i;
-	
+
 	for (i=0; i<n; i++) {
 		delta = s1.charCodeAt(i) - s2.charCodeAt(i);
 		delta = delta * delta;
@@ -164,42 +164,42 @@ function offspring(s1, s2) {
 function doGeneration() {
 	// rank by fitness
 	children.sort(entitySorter);
-	
+
 	// account for entity TTL
 	// children = children.filter(function(c) { return c.age < age_threshold; });
 	children = children.map(function(c) { c.age++; return c; });
-	
-	
+
+
 	// enforce generational size limit
 	if (children.length > generation_size) {
 		children.length = generation_size;
 	}
-	
+
 
 	// let the UI know
 	var c = children.slice(0,10);
 	postMessage({type:"generation",data:c});
-	
+
 	var size = children.length;
-	
+
 	for (var i=0; i<size; i++) {
 		do {
 			var i1 = Math.floor(Math.random()*(size/10) );
 			var i2 = Math.floor(Math.random()*size);
-			
+
 			if (children.length == 2) {
 				i1=0;
 				i2=1;
 			}
 		} while (i1 == i2);
-					
+
 		var c = offspring(children[i1].code, children[i2].code);
 		for (var j=0; j<c.length; j++) {
 			addChild(evaluate(c[j]));
 		}
 	}
 	generation_count++;
-}	
+}
 
 function safeCharCodeAt(s, i) {
 	var rv = 0;
@@ -226,9 +226,9 @@ var max_val = 255;
 var a = [];
 
 function bf_interpret(prog, params) {
-		
+
 	var instructionCount = 10000;
-	
+
     var i;
 	for (i = 0; i < mem_size; i++) {
 		a[i]=0;
@@ -257,10 +257,10 @@ function bf_interpret(prog, params) {
 			if (a[p]<0) a[p] = max_val + a[p];
 			break;
 		case ".":
-			result += String.fromCharCode(a[p]); 
+			result += String.fromCharCode(a[p]);
 			break;
 		case ",":
-			a[p] = params.charCodeAt(argi); 
+			a[p] = params.charCodeAt(argi);
 			argi++;
 			break;
 		case "[":
@@ -282,7 +282,7 @@ function bf_interpret(prog, params) {
 			}
 			break;
 		case "]":
-			if (a[p] != 0) { 
+			if (a[p] != 0) {
 				for (i--; l > 0 || prog.charAt(i) != '['; i--) {
 					if (i<0) {
 						l=0;
@@ -313,24 +313,25 @@ var seeded = false;
 var step_mode = false;
 
 onmessage = function(e){
-  if ( e.data === "start" ) {
-	if (calculation_interval == null) {
-		if (!seeded) {
-			seed();
-			seeded = true;
+  if ( e.data.cmd === "start" ) {
+		if (calculation_interval == null) {
+			target = e.data.target;
+			if (!seeded) {
+				seed();
+				seeded = true;
+			}
+			if (step_mode) {
+				setTimeout(doGeneration, 1);
+			}  else {
+				calculation_interval = setInterval(doGeneration, 100);
+			}
+			stats_interval = setInterval(reportStats,10000);
+		} else {
+			clearInterval(calculation_interval);
+			calculation_interval = null;
+			clearInterval(stats_interval);
+			stats_interval = null;
 		}
-		if (step_mode) {
-			setTimeout(doGeneration, 1);
-		}  else {
-			calculation_interval = setInterval(doGeneration, 100);
-		}
-		stats_interval = setInterval(reportStats,10000);
-	} else {
-		clearInterval(calculation_interval);
-		calculation_interval = null;
-		clearInterval(stats_interval);
-		stats_interval = null;
-	}
   }
 };
 
