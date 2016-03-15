@@ -1,3 +1,5 @@
+importScripts("bf.js", "mutator.js");
+
 var children=[]
 
 var target = "";
@@ -8,92 +10,7 @@ var check_for_dups = true;
 var generation_count = 1; // set to 1 to account for the magic "seed" generation
 var entity_count = 0;
 
-String.prototype.reverse=function(){
-	return this.split("").reverse().join("");
-}
 
-/*
- * generate 2 numbers that are non-equal points in a string
- */
-function generate_splits(s) {
-  var length = s.length;
-  if (length<5) {
-    return [0, length];
-  }
-  var splits = [];
-	do {
-		splits = [ Math.floor(Math.random()*length), Math.floor(Math.random()*length) ];
-	} while (splits[0] == splits[1] && s.length != 0);
-	splits.sort(numberSorter);
-	return splits;
-}
-
-/*
- * replace a section of the string with randomly generated code of the same length as the originally selected section
- */
-function mutate_replace(s) {
-	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[1])
-	return s;
-}
-
-/*
- * insert a sequence randomly generated code and then truncate the string to its original length
- */
-function mutate_insert(s) {
-	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[0]).substring(0,s.length);
-	return s;
-}
-
-/*
- * insert a sequence of randomly generated code, allowing the string to grow
- */
-function mutate_grow(s) {
-	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits[1]-splits[0]) + s.substring(splits[0]);
-	return s;
-}
-
-/*
- * remove a sequence of characters from the string
- */
-function mutate_shrink(s) {
-	var splits = generate_splits(s);
-	s=s.substring(0, splits[0])  + s.substring(splits[1])
-	return s;
-}
-
-/*
- * remove a sequence of characters from the string and replace them with a randomly generated sequence of a likely different length
- */
-function mutate_grow_or_shrink(s) {
-	var splits = generate_splits(s);
-	var splits2 = generate_splits(s);
-	s=s.substring(0, splits[0]) + generateRandomCode(splits2[1]-splits2[0]) + s.substring(splits[1])
-	return s;
-}
-
-/*
- * replace a sequence of characters with their reversal
- */
-function mutate_reverse(s) {
-	var splits = generate_splits(s);
-	s=s.substring(0, splits[0]) + s.substring(splits[0],splits[1]).reverse() + s.substring(splits[1]);
-	return s;
-}
-
-//var mutations = [ mutate_replace, mutate_insert, mutate_grow, mutate_shrink, mutate_grow_or_shrink, mutate_reverse ];
-var mutations = [ mutate_grow, mutate_shrink, mutate_grow_or_shrink ];
-var mutations_size = mutations.length;
-
-
-function mutate(s) {
-	if (Math.random() < mutation_threshold) {
-		return mutations[Math.floor(Math.random() * mutations_size)](s);
-	}
-	return s;
-}
 
 function addChild(child) {
 	if (check_for_dups) {
@@ -199,113 +116,10 @@ function doGeneration() {
 		}
 	}
 	generation_count++;
+
+	setTimeout(doGeneration, 1);
 }
 
-function safeCharCodeAt(s, i) {
-	var rv = 0;
-	if (i<s.length) {
-		rv = s.charCodeAt(i);
-	}
-	return rv;
-}
-
-var legal=".,+-<>[]";
-var legallength = legal.length;
-var c = new Array();
-
-function generateRandomCode(l) {
-	for (var i=0; i<l; ++i) {
-		c[i] = legal.charAt(Math.random()*legallength);
-	}
-	c.length = l;
-	return c.join("");
-}
-
-var mem_size = 30000; // given that instructionCount clips us to 10000 cycles, 30000 seems a tad ridiculous
-var max_val = 255;
-var a = [];
-
-function bf_interpret(prog, params) {
-
-	var instructionCount = 10000;
-
-    var i;
-	for (i = 0; i < mem_size; i++) {
-		a[i]=0;
-	}
-
-    var p = 0;
-    var l = 0;
-    var argi = 0;
-
-    var result = '';
-
-    for (i = 0; i < prog.length && instructionCount > 0; i++, instructionCount--) {
-	switch (prog.charAt(i)) {
-		case ">":
-			p++; p %= mem_size;
-			break;
-		case "<":
-			p--; p %= mem_size;
-			if (p<0) p = mem_size + p;
-			break;
-		case "+":
-			a[p]++; a[p] %= max_val;
-			break;
-		case "-":
-			a[p]--; a[p] %= max_val;
-			if (a[p]<0) a[p] = max_val + a[p];
-			break;
-		case ".":
-			result += String.fromCharCode(a[p]);
-			break;
-		case ",":
-			a[p] = params.charCodeAt(argi);
-			argi++;
-			break;
-		case "[":
-			if (a[p] == 0) {
-				for (i++; l > 0 || prog.charAt(i) != ']'; i++) {
-					if (i>=prog.length) {
-						l=0;
-						instructionCount = 0;
-						break;
-					} else {
-						if (prog.charAt(i) == '[') {
-							l++;
-						}
-						if (prog.charAt(i) == ']') {
-							l--;
-						}
-					}
-				}
-			}
-			break;
-		case "]":
-			if (a[p] != 0) {
-				for (i--; l > 0 || prog.charAt(i) != '['; i--) {
-					if (i<0) {
-						l=0;
-						instructionCount = 0;
-						break;
-					} else {
-						if (prog.charAt(i) == ']') {
-							l++;
-						}
-						if (prog.charAt(i) == '[') {
-							l--;
-						}
-					}
-				}
-			}
-
-			i--;
-			break;
-		}
-    }
-
-    return result;
-}
 
 var calculation_interval = null;
 var stats_interval = null;
@@ -323,7 +137,8 @@ onmessage = function(e){
 			if (step_mode) {
 				setTimeout(doGeneration, 1);
 			}  else {
-				calculation_interval = setInterval(doGeneration, 100);
+				// calculation_interval = setInterval(doGeneration, 100);
+				doGeneration();
 			}
 			stats_interval = setInterval(reportStats,10000);
 		} else {
