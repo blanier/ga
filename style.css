@@ -1,33 +1,36 @@
 .output,.outputheader{
-	width:20%; 
+	width:20%;
 	text-overflow:ellipsis;
 	overflow:hidden;
-    white-space:nowrap;
-    text-overflow:ellipsis;
+	white-space:nowrap;
 }
 
 .output {
-	color:red; 
+	color:red;
+}
+
+.code {
+	text-overflow:ellipsis;
+	overflow:hidden;
+  white-space:nowrap;
 }
 
 .count{
-	width:5%; 
+	width:5%;
 	text-overflow:ellipsis;
 	overflow:hidden;
-    white-space:nowrap;
-    text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
 .fitness{
-	width:15%; 
+	width:15%;
 	text-overflow:ellipsis;
 	overflow:hidden;
-    white-space:nowrap;
-    text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
-.even_row {background-color:#cccccc;border-width:0}
-.odd_row {background-color:#eeeeee;border-width:0}
+.even_row {background-color:#cccccc;border-width:0;height:50px}
+.odd_row {background-color:#eeeeee;border-width:0;height:50px}
 
 .generation{
 	width:100%;

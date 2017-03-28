@@ -16,7 +16,9 @@
 
             for (i=0; i<e.length; i++) {
                 var c = (i%2==0) ? "even_row" : "odd_row";
-                t += "<tr class='" + c + "'><td>"+ i +"</td><td>" + roundedDisplay(e[i].fitness) + "</td><td class='output'>" + safeDisplay(e[i].output) + "</td><td>" + e[i].code + "</td></tr>";
+                t += "<tr class='" + c + "'><td>"+ i +"</td><td>" + roundedDisplay(e[i].fitness) +
+                     "</td><td class='output'>" + safeDisplay(e[i].output) + "</td><td class='code'>"
+                     + e[i].code + "</td></tr>";
             }
 
             t += "</table>";
