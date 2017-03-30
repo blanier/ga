@@ -69,7 +69,7 @@ function stringDistance(s1, s2) {
 
 function offspring(s1, s2) {
 	if (Math.random() > 0.5) {
-		tmp=s1;
+		var tmp=s1;
 		s1=s2;
 		s2=tmp;
 	}
@@ -94,8 +94,8 @@ function doGeneration() {
 
 
 	// let the UI know
-	var c = children.slice(0,10);
-	postMessage({type:"generation",data:c});
+	var slice = children.slice(0,10);
+	postMessage({type:"generation",data:slice});
 
 	var size = children.length;
 
