@@ -1,0 +1,26 @@
+{
+  "name": "ga",
+  "homepage": "https://github.com/blanier/ga",
+  "authors": [
+    "Brian Lanier <brian@lanier.org>"
+  ],
+  "description": "Brainfuck Genetic Algorim Super-duper thingy",
+  "main": "index.html",
+  "keywords": [
+    "brainfuck",
+    "genetic",
+    "algorithm"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "c3": "^0.4.11"
+  }
+}

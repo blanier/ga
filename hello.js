@@ -125,9 +125,11 @@ var calculation_interval = null;
 var stats_interval = null;
 var seeded = false;
 var step_mode = false;
+var start_time = 0;
 
 onmessage = function(e){
   if ( e.data.cmd === "start" ) {
+		start_time = new Date().getTime();
 		if (calculation_interval == null) {
 			target = e.data.target;
 			if (!seeded) {
@@ -157,7 +159,8 @@ function seed() {
 }
 
 function reportStats() {
-	postMessage({type:"stats",data: { generation_count: generation_count, entity_count: entity_count } });
+	var now = new Date().getTime();
+	postMessage({type:"stats",data: { generation_count: generation_count, entity_count: entity_count, elapsed: now - start_time, now: now } });
 }
 
 

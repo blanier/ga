@@ -2,9 +2,38 @@
         var worker = undefined;
         var target = "Hello World"
         var cmd = {cmd: "start", target: target };
+        var chart;
 
         window.onload = function() {
             toggleWorker();
+
+            chart = c3.generate({
+                        bindto: "#chart",
+                        size: { height: 500},
+
+                        data: {
+                            x: 'x',
+                            columns: columns,
+                            axes: {
+                                fitness: 'y',
+                                gps: 'y2'
+                            }
+                        },
+
+
+                        axis: {
+                            x: {
+                                type: 'timeseries',
+                                tick: {
+                                    format: '%Y-%m-%d %H:%M:%S '
+                                }
+                            },
+
+                             y2: {
+                                show: true
+                            }
+                        }
+                    });
         };
 
         function displayEntities(e) {
@@ -13,6 +42,8 @@
             if (e.length > 40) {
                 e.length = 40;
             }
+
+            e.length = 1;
 
             for (i=0; i<e.length; i++) {
                 var c = (i%2==0) ? "even_row" : "odd_row";
@@ -26,9 +57,22 @@
             document.getElementById("Generation").innerHTML = t;
         }
 
+        var columns = [ ['x'], ['fitness'], ['gps'] ];
+        var fittest_objects = {}
+
         function displayStats(s) {
+            let gps = Math.round(s.entity_count/s.elapsed*1000);
             document.getElementById("entity_count").innerHTML = s.entity_count;
             document.getElementById("generation_count").innerHTML = s.generation_count;
+            document.getElementById("generations_per_second").innerHTML = gps ;
+
+            var now = new Date(s.now);
+            columns[0].push();
+            columns[1].push(Math.log(fittest) / Math.LN10);
+            columns[2].push(gps);
+            chart.load({columns:columns})
+
+            fittest_objects[now] = fittest_object;
         }
 
         function safeDisplay(s) {
@@ -46,9 +90,11 @@
         }
 
         var fittest = Number.MAX_VALUE;
+        var fittest_object;
 
         function updateFittest(e) {
             if (e[0].fitness < fittest) {
+                fittest_object = JSON.parse(JSON.stringify(e[0]));
                 fittest = e[0].fitness;
                 document.title = target + " : " + fittest;
             }

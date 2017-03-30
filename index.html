@@ -4,7 +4,12 @@
   <head>
     <title>JS BF - </title>
 
+    <link href="bower_components/c3/c3.css" rel="stylesheet" type="text/css">
+    <script src="bower_components/d3/d3.js" charset="utf-8"></script>
+    <script src="bower_components/c3/c3.js"></script>
+
     <link rel="stylesheet" type="text/css" href="style.css" />
+
     <script src="main.js"></script>
   </head>
   <body>
@@ -12,10 +17,12 @@
     </div>
     <div id="GenerationControl">
       <span class="clickable" id="threadToggle" onclick="toggleWorker();"> Stop/Start Thread </span>
-      Processed <span id= "entity_count">0</span> entities across <span id= "generation_count">0</span> generations.
+      Processed <span id= "entity_count">0</span> entities across <span id= "generation_count">0</span> generations. <span id= "generations_per_second">0</span> generations/second
     </div>
     <div id="Generation">
       Insert Current Here
     </div>
+
+    <div id="chart"></div>
   </body>
 </html>
