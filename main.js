@@ -8,32 +8,28 @@
             toggleWorker();
 
             chart = c3.generate({
-                        bindto: "#chart",
-                        size: { height: 500},
-
-                        data: {
-                            x: 'x',
-                            columns: columns,
-                            axes: {
-                                fitness: 'y',
-                                gps: 'y2'
-                            }
-                        },
-
-
-                        axis: {
-                            x: {
-                                type: 'timeseries',
-                                tick: {
-                                    format: '%Y-%m-%d %H:%M:%S '
-                                }
-                            },
-
-                             y2: {
-                                show: true
-                            }
+                bindto: "#chart",
+                size: { height: 500 },
+                data: {
+                    x: 'x',
+                    columns: columns,
+                    axes: {
+                        fitness: 'y',
+                        gps: 'y2'
+                    }
+                },
+                axis: {
+                    x: {
+                        type: 'timeseries',
+                        tick: {
+                            format: '%Y-%m-%d %H:%M:%S '
                         }
-                    });
+                    },
+                     y2: {
+                        show: true
+                    }
+                }
+            });
         };
 
         function displayEntities(e) {
@@ -67,7 +63,7 @@
             document.getElementById("generations_per_second").innerHTML = gps ;
 
             var now = new Date(s.now);
-            columns[0].push();
+            columns[0].push(now);
             columns[1].push(Math.log(fittest) / Math.LN10);
             columns[2].push(gps);
             chart.load({columns:columns})
