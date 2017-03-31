@@ -30,10 +30,6 @@ function entitySorter(e1, e2) {
 	return e1.fitness - e2.fitness;
 }
 
-function numberSorter(e1, e2) {
-	return e1 - e2;
-}
-
 function evaluate(_code) {
 	entity_count++;
 	var _output = bf_interpret(_code, "");

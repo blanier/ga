@@ -1,6 +1,6 @@
 
 var worker = undefined;
-var target = "Hello World"
+var target = "hello world"
 var cmd = {cmd: "start", target: target };
 var chart;
 
@@ -53,7 +53,7 @@ function displayEntities(e) {
     document.getElementById("Generation").innerHTML = t;
 }
 
-var columns = [ ['x'], ['fitness'], ['gps'] ];
+var columns = [ ['x'], ['fittest_ever'], ['fittest_now'], ['gps'] ];
 var fittest_objects = {}
 
 function displayStats(s) {
@@ -64,11 +64,12 @@ function displayStats(s) {
 
     var now = new Date(s.now);
     columns[0].push(now);
-    columns[1].push(Math.log(fittest) / Math.LN10);
-    columns[2].push(gps);
+    columns[1].push(Math.log(fittest_ever.fitness) / Math.LN10);
+    columns[2].push(Math.log(fittest_now.fitness) / Math.LN10);
+    columns[3].push(gps);
     chart.load({columns:columns})
 
-    fittest_objects[now] = fittest_object;
+    fittest_objects[now] = fittest_ever;
 }
 
 function safeDisplay(s) {
@@ -83,11 +84,13 @@ function roundedDisplay(f) {
 }
 
 var fittest = Number.MAX_VALUE;
-var fittest_object;
+var fittest_now;
+var fittest_ever;
 
 function updateFittest(e) {
+    fittest_now = JSON.parse(JSON.stringify(e[0]));
     if (e[0].fitness < fittest) {
-        fittest_object = JSON.parse(JSON.stringify(e[0]));
+        fittest_ever = fittest_now;
         fittest = e[0].fitness;
         document.title = target + " : " + fittest;
     }

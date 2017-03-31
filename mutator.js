@@ -2,6 +2,10 @@ String.prototype.reverse=function(){
 	return this.split("").reverse().join("");
 }
 
+function numberSorter(e1, e2) {
+	return e1 - e2;
+}
+
 /*
  * generate 2 numbers that are non-equal points in a string
  */
