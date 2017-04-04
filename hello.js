@@ -56,7 +56,7 @@ function stringDistance(s1, s2) {
 	}
 
 	for (; i<x-1; i++) {
-		delta = 256; // maximum excursion
+		delta = 128; // maximum excursion
 		delta = delta * delta;
 		rv += delta * stringDistancePositionWeight(i, s2.length);
 	}
