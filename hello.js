@@ -3,14 +3,11 @@ importScripts("bf.js", "mutator.js");
 var children=[]
 
 var target = "";
-var mutation_threshold = .5;
 var generation_size = 100;
 var check_for_dups = true;
 
 var generation_count = 1; // set to 1 to account for the magic "seed" generation
 var entity_count = 0;
-
-
 
 function addChild(child) {
 	if (check_for_dups) {
@@ -32,13 +29,13 @@ function entitySorter(e1, e2) {
 
 function evaluate(_code) {
 	entity_count++;
-	var _output = bf_interpret(_code, "");
+	var _output = bf_interpret(_code, "", {instruction_count: 5000, memory_size: 1000});
 	var _fitness = stringDistance(_output, target) + (Math.sqrt(_code.length));
 	return {code:_code, output:_output, fitness:_fitness, age:0 };
 }
 
 function stringDistancePositionWeight(pos, targetlen) {
-	var root = 9; //5 // 1.5
+	var root = targetlen; //9; //5 // 1.5
 	return (pos < targetlen) ? Math.pow(root, targetlen - pos) : root + Math.sqrt(pos - targetlen);
 }
 
@@ -80,14 +77,13 @@ function doGeneration() {
 
 	// account for entity TTL
 	// children = children.filter(function(c) { return c.age < age_threshold; });
-	children = children.map(function(c) { c.age++; return c; });
+	// children = children.map(function(c) { c.age++; return c; });
 
 
 	// enforce generational size limit
 	if (children.length > generation_size) {
 		children.length = generation_size;
 	}
-
 
 	// let the UI know
 	var slice = children.slice(0,10);
@@ -97,7 +93,7 @@ function doGeneration() {
 
 	for (var i=0; i<size; i++) {
 		do {
-			var i1 = Math.floor(Math.random()*(size/10) );
+			var i1 = Math.floor(Math.random()*(size/35) );
 			var i2 = Math.floor(Math.random()*size);
 
 			if (children.length == 2) {
@@ -120,7 +116,6 @@ function doGeneration() {
 var calculation_interval = null;
 var stats_interval = null;
 var seeded = false;
-var step_mode = false;
 var start_time = 0;
 
 onmessage = function(e){
@@ -132,12 +127,8 @@ onmessage = function(e){
 				seed();
 				seeded = true;
 			}
-			if (step_mode) {
-				setTimeout(doGeneration, 1);
-			}  else {
-				// calculation_interval = setInterval(doGeneration, 100);
-				doGeneration();
-			}
+			doGeneration();
+			reportStats();
 			stats_interval = setInterval(reportStats,10000);
 		} else {
 			clearInterval(calculation_interval);
@@ -145,23 +136,20 @@ onmessage = function(e){
 			clearInterval(stats_interval);
 			stats_interval = null;
 		}
-  }
+  } else if (e.data.cmd === "stats and die") {
+		reportStats();
+		close();
+	}
 };
 
 function seed() {
 	for (var i=0; i<generation_size; i++) {
 		addChild(evaluate(generateRandomCode(250)));
 	}
+	//reportStats()
 }
 
 function reportStats() {
 	var now = new Date().getTime();
 	postMessage({type:"stats",data: { generation_count: generation_count, entity_count: entity_count, elapsed: now - start_time, now: now } });
-}
-
-
-function doTest() {
-	var testCode = generateRandomCode(Math.floor(Math.random()*250));
-	bf_interpret(testCode,"");
-	console.log(Date());
 }

@@ -1,3 +1,5 @@
+var mutation_threshold = .5;
+
 String.prototype.reverse=function(){
 	return this.split("").reverse().join("");
 }

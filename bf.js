@@ -1,22 +1,21 @@
 var legal=".,+-<>[]";
-var legallength = legal.length;
 var c = new Array();
 
 function generateRandomCode(l) {
   for (var i=0; i<l; ++i) {
-    c[i] = legal.charAt(Math.random()*legallength);
+    c[i] = legal.charAt(Math.random()*legal.length);
   }
   c.length = l;
   return c.join("");
 }
 
-var mem_size = 30000; // given that instructionCount clips us to 10000 cycles, 30000 seems a tad ridiculous
 var max_val = 255;
 var a = [];
 
-function bf_interpret(prog, params) {
+function bf_interpret(prog, args, parameters) {
 
-  var instructionCount = 10000;
+  var instruction_count = parameters.instruction_count;
+  var mem_size = parameters.memory_size;
 
   var i;
   for (i = 0; i < mem_size; i++) {
@@ -29,7 +28,7 @@ function bf_interpret(prog, params) {
 
   var result = '';
 
-  for (i = 0; i < prog.length && instructionCount > 0; i++, instructionCount--) {
+  for (i = 0; i < prog.length && instruction_count > 0; i++, instruction_count--) {
     switch (prog.charAt(i)) {
       case ">":
       p++; p %= mem_size;
@@ -49,7 +48,7 @@ function bf_interpret(prog, params) {
       result += String.fromCharCode(a[p]);
       break;
       case ",":
-      a[p] = params.charCodeAt(argi);
+      a[p] = args.charCodeAt(argi);
       argi++;
       break;
       case "[":
@@ -57,7 +56,7 @@ function bf_interpret(prog, params) {
         for (i++; l > 0 || prog.charAt(i) != ']'; i++) {
           if (i>=prog.length) {
             l=0;
-            instructionCount = 0;
+            instruction_count = 0;
             break;
           } else {
             if (prog.charAt(i) == '[') {
@@ -75,7 +74,7 @@ function bf_interpret(prog, params) {
         for (i--; l > 0 || prog.charAt(i) != '['; i--) {
           if (i<0) {
             l=0;
-            instructionCount = 0;
+            instruction_count = 0;
             break;
           } else {
             if (prog.charAt(i) == ']') {
