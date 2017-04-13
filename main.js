@@ -123,6 +123,8 @@ function displayStats(s) {
     document.getElementById("entity_count").innerHTML = s.entity_count;
     document.getElementById("generation_count").innerHTML = s.generation_count;
     document.getElementById("generations_per_second").innerHTML = gps ;
+    var seconds = Math.floor(s.elapsed/1000);
+    document.getElementById("elapsed_time").innerHTML = `${Math.floor(seconds/60)}:${seconds%60}`
 
     var now = new Date(s.now);
 
