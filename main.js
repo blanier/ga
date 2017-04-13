@@ -1,10 +1,36 @@
+var parameters = {
+  interpreter: {
+    memory_size: 1000,
+    instruction_count: 5000
+  },
+
+  randomness: {
+    seed: ""
+  },
+
+  generation: {
+    size: 100,
+    age_threshold: 10,
+    mutation_threshold: .5,
+    check_for_dups: true
+  },
+
+  goal: {
+    target: "hello world",
+    input: ""
+  }
+};
 
 var worker = undefined;
-var target = "hello world"
-var cmd = {cmd: "start", target: target };
 var chart;
 
 window.onload = function() {
+
+    // handle randomness initialization
+    // if (parameters.randomness.seed && paramaters.randomnedd.seed != "") {
+    //  randmom.seed(paramaters.randomness.seed)
+    // }
+
     chart = c3.generate({
         bindto: "#chart",
         size: { height: 500 },
@@ -74,7 +100,7 @@ function displayEntities(e) {
     document.getElementById("Generation").innerHTML = t;
 }
 
-var columns = [ ['x'], ['fittest_ever'], ['fittest_now'], ['gps'] ];
+var columns = [ ['x'], ['fittest_ever'], ['fittest_now'], ['gps'], ['age']];
 var fittest_objects = {}
 
 function safeDisplay(s) {
@@ -102,9 +128,17 @@ function displayStats(s) {
 
     fittest_objects[now] = fittest_ever;
     columns[0].push(now);
-    columns[1].push(Math.log(fittest_ever.fitness) / Math.LN10);
-    columns[2].push(Math.log(fittest_now.fitness) / Math.LN10);
+
+    let log_scale = true
+    if (log_scale) {
+      columns[1].push(Math.log(fittest_ever.fitness) / Math.LN10);
+      columns[2].push(Math.log(fittest_now.fitness) / Math.LN10);
+    } else {
+      columns[1].push(fittest_ever.fitness);
+      columns[2].push(fittest_now.fitness);
+    }
     columns[3].push(gps);
+    columns[4].push(fittest_now.age);
     chart.load({columns:columns});
 }
 
@@ -113,11 +147,11 @@ function updateFittest(e) {
     if (e[0].fitness < fittest) {
         fittest_ever = fittest_now;
         fittest = e[0].fitness;
-        document.title = target + " : " + fittest;
+        document.title = parameters.goal.target + " : " + fittest;
     }
 
     // stop if we match
-    if (true && e[0].output == target) {
+    if (true && e[0].output == parameters.goal.target) {
         worker.postMessage({cmd: "stats and die" });
         // toggleWorker();
     }
@@ -139,6 +173,6 @@ function toggleWorker() {
           console.log(e.data);
       }
     }, false);
-    worker.postMessage(cmd);
+    worker.postMessage({cmd: "start", parameters: JSON.stringify(parameters)});
   }
 }

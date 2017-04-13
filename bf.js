@@ -10,17 +10,13 @@ function generateRandomCode(l) {
 }
 
 var max_val = 255;
-var a = [];
 
 function bf_interpret(prog, args, parameters) {
 
   var instruction_count = parameters.instruction_count;
   var mem_size = parameters.memory_size;
-
-  var i;
-  for (i = 0; i < mem_size; i++) {
-    a[i]=0;
-  }
+  var a = new Array(mem_size);
+  a.fill(0, 0, mem_size);
 
   var p = 0;
   var l = 0;
@@ -28,7 +24,7 @@ function bf_interpret(prog, args, parameters) {
 
   var result = '';
 
-  for (i = 0; i < prog.length && instruction_count > 0; i++, instruction_count--) {
+  for (var i = 0; i < prog.length && instruction_count > 0; i++, instruction_count--) {
     switch (prog.charAt(i)) {
       case ">":
       p++; p %= mem_size;

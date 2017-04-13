@@ -1,16 +1,12 @@
 importScripts("bf.js", "mutator.js");
 
+var parameters = {};
 var children=[]
-
-var target = "";
-var generation_size = 100;
-var check_for_dups = true;
-
 var generation_count = 1; // set to 1 to account for the magic "seed" generation
 var entity_count = 0;
 
 function addChild(child) {
-	if (check_for_dups) {
+	if (parameters.generation.check_for_dups) {
 		for (var i=0; i<children.length; i++) {
 			if (children[i].code == child.code) {
 				return;
@@ -21,16 +17,13 @@ function addChild(child) {
 }
 
 function entitySorter(e1, e2) {
-	if (e1.age != e2.age) {
-		return e1.age - e2.age;
-	}
 	return e1.fitness - e2.fitness;
 }
 
 function evaluate(_code) {
 	entity_count++;
-	var _output = bf_interpret(_code, "", {instruction_count: 5000, memory_size: 1000});
-	var _fitness = stringDistance(_output, target) + (Math.sqrt(_code.length));
+	var _output = bf_interpret(_code, parameters.goal.input, parameters.interpreter);
+	var _fitness = stringDistance(_output, parameters.goal.target) + (Math.sqrt(_code.length));
 	return {code:_code, output:_output, fitness:_fitness, age:0 };
 }
 
@@ -76,13 +69,12 @@ function doGeneration() {
 	children.sort(entitySorter);
 
 	// account for entity TTL
-	// children = children.filter(function(c) { return c.age < age_threshold; });
-	// children = children.map(function(c) { c.age++; return c; });
-
+	children = children.filter(function(c) { return c.age <= parameters.generation.age_threshold; });
+	children = children.map(function(c) { c.age++; return c; });
 
 	// enforce generational size limit
-	if (children.length > generation_size) {
-		children.length = generation_size;
+	if (children.length > parameters.generation.size) {
+		children.length = parameters.generation.size;
 	}
 
 	// let the UI know
@@ -120,9 +112,9 @@ var start_time = 0;
 
 onmessage = function(e){
   if ( e.data.cmd === "start" ) {
+		parameters = JSON.parse(e.data.parameters);
 		start_time = new Date().getTime();
 		if (calculation_interval == null) {
-			target = e.data.target;
 			if (!seeded) {
 				seed();
 				seeded = true;
@@ -143,10 +135,9 @@ onmessage = function(e){
 };
 
 function seed() {
-	for (var i=0; i<generation_size; i++) {
+	for (var i=0; i<parameters.generation.size; i++) {
 		addChild(evaluate(generateRandomCode(250)));
 	}
-	//reportStats()
 }
 
 function reportStats() {
