@@ -26,10 +26,6 @@
         ],
         "callback-return": "error",
         "camelcase": "off",
-        "capitalized-comments": [
-            "error",
-            "never"
-        ],
         "class-methods-use-this": "error",
         "comma-dangle": "error",
         "comma-spacing": "off",
