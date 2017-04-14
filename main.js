@@ -234,6 +234,12 @@ function displayStats(s) {
     columns[3].push(gps);
     columns[4].push(fittest_now.age);
     chart.load({columns:columns});
+
+    if (s.last_time) {
+      window.GA.stopWorker();
+      console.log("REORT TO FIREBASE");
+      console.log(s);
+    }
 }
 
 function updateFittest(e) {

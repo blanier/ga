@@ -1,3 +1,5 @@
+/*global bf_interpret generateRandomCode mutate:true*/
+
 importScripts("bf.js", "mutator.js");
 
 var parameters = {};
@@ -109,6 +111,7 @@ var calculation_interval = null;
 var stats_interval = null;
 var seeded = false;
 var start_time = 0;
+var last_time = false;
 
 onmessage = function(e){
   if ( e.data.cmd === "start" ) {
@@ -129,6 +132,7 @@ onmessage = function(e){
 			stats_interval = null;
 		}
   } else if (e.data.cmd === "stats and die") {
+		last_time = true;
 		reportStats();
 		close();
 	}
@@ -142,5 +146,5 @@ function seed() {
 
 function reportStats() {
 	var now = new Date().getTime();
-	postMessage({type:"stats",data: { generation_count: generation_count, entity_count: entity_count, elapsed: now - start_time, now: now } });
+	postMessage({type:"stats",data: { generation_count: generation_count, entity_count: entity_count, elapsed: now - start_time, now: now, last_time: last_time} });
 }
