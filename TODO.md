@@ -7,11 +7,9 @@
 - [ ] stringDistance explorer
 - [ ] single-step generation
 - [ ] stop rewriting the html every damn time
-- [ ] track best_ever and best_this_generation
-- [ ] Angularify
-- [ ] UIBootstrap
 - [ ] more precise thread control
 - [ ] multi-input/output training
+- [ ] seedable PRNG
 
 
 - [x] refactor hello.js via importScripts()
@@ -23,3 +21,4 @@
 - [x] Make rows constant height
 - [X] progress charts
 - [X] calculate generations/second
+- [X] - [X] track best_ever and best_this_generation

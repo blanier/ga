@@ -10,19 +10,39 @@
 
     <link rel="stylesheet" type="text/css" href="style.css" />
 
+    <script src="https://www.gstatic.com/firebasejs/3.7.6/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var firebaseConfig = {
+        apiKey: "AIzaSyB1V68Bk8RJ5qwvRgq6KcN57baOzK_s0cg",
+        authDomain: "bf-genetic.firebaseapp.com",
+        databaseURL: "https://bf-genetic.firebaseio.com",
+        projectId: "bf-genetic",
+        storageBucket: "bf-genetic.appspot.com",
+        messagingSenderId: "489177475195"
+      };
+      firebase.initializeApp(firebaseConfig);
+    </script>
+
     <script src="main.js"></script>
   </head>
   <body>
     <div id="PopulationControl">
     </div>
     <div id="GenerationControl">
-      <span class="clickable" id="threadToggle" onclick="toggleWorker();"> Stop/Start Thread </span>
-      Processed <span id= "entity_count">0</span> entities across <span id= "generation_count">0</span> generations. <span id= "generations_per_second">0</span> generations/second
+      <span class="clickable" id="start_thread">Start Thread</span>
+      <span class="clickable" id="stop_thread">Stop Thread</span>
+      Processed <span id= "entity_count">0</span> entities across <span id= "generation_count">0</span> generations.
+      <span id= "generations_per_second">0</span> generations/second (<span id="elapsed_time">0:00</span>)
     </div>
     <div id="Generation">
       Insert Current Here
     </div>
 
     <div id="chart"></div>
+    <div>
+      <select id="config_selector"></select>
+      <span id="config_key"></span>
+      <div id="config"></div>
   </body>
 </html>

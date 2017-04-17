@@ -1,19 +1,14 @@
+/*global bf_interpret generateRandomCode mutate:true*/
+
 importScripts("bf.js", "mutator.js");
 
+var parameters = {};
 var children=[]
-
-var target = "";
-var mutation_threshold = .5;
-var generation_size = 100;
-var check_for_dups = true;
-
 var generation_count = 1; // set to 1 to account for the magic "seed" generation
 var entity_count = 0;
 
-
-
 function addChild(child) {
-	if (check_for_dups) {
+	if (parameters.generation.check_for_dups) {
 		for (var i=0; i<children.length; i++) {
 			if (children[i].code == child.code) {
 				return;
@@ -24,21 +19,18 @@ function addChild(child) {
 }
 
 function entitySorter(e1, e2) {
-	if (e1.age != e2.age) {
-		return e1.age - e2.age;
-	}
 	return e1.fitness - e2.fitness;
 }
 
 function evaluate(_code) {
 	entity_count++;
-	var _output = bf_interpret(_code, "");
-	var _fitness = stringDistance(_output, target) + (Math.sqrt(_code.length));
+	var _output = bf_interpret(_code, parameters.goal.input, parameters.interpreter);
+	var _fitness = stringDistance(_output, parameters.goal.target) + (Math.sqrt(_code.length));
 	return {code:_code, output:_output, fitness:_fitness, age:0 };
 }
 
 function stringDistancePositionWeight(pos, targetlen) {
-	var root = 9; //5 // 1.5
+	var root = targetlen; //9; //5 // 1.5
 	return (pos < targetlen) ? Math.pow(root, targetlen - pos) : root + Math.sqrt(pos - targetlen);
 }
 
@@ -56,7 +48,7 @@ function stringDistance(s1, s2) {
 	}
 
 	for (; i<x-1; i++) {
-		delta = 256; // maximum excursion
+		delta = 128; // maximum excursion
 		delta = delta * delta;
 		rv += delta * stringDistancePositionWeight(i, s2.length);
 	}
@@ -79,15 +71,13 @@ function doGeneration() {
 	children.sort(entitySorter);
 
 	// account for entity TTL
-	// children = children.filter(function(c) { return c.age < age_threshold; });
+	children = children.filter(function(c) { return c.age <= parameters.generation.age_threshold; });
 	children = children.map(function(c) { c.age++; return c; });
 
-
 	// enforce generational size limit
-	if (children.length > generation_size) {
-		children.length = generation_size;
+	if (children.length > parameters.generation.size) {
+		children.length = parameters.generation.size;
 	}
-
 
 	// let the UI know
 	var slice = children.slice(0,10);
@@ -97,7 +87,7 @@ function doGeneration() {
 
 	for (var i=0; i<size; i++) {
 		do {
-			var i1 = Math.floor(Math.random()*(size/10) );
+			var i1 = Math.floor(Math.random()*(size/35) );
 			var i2 = Math.floor(Math.random()*size);
 
 			if (children.length == 2) {
@@ -120,24 +110,20 @@ function doGeneration() {
 var calculation_interval = null;
 var stats_interval = null;
 var seeded = false;
-var step_mode = false;
 var start_time = 0;
+var last_time = false;
 
 onmessage = function(e){
   if ( e.data.cmd === "start" ) {
+		parameters = JSON.parse(e.data.parameters);
 		start_time = new Date().getTime();
 		if (calculation_interval == null) {
-			target = e.data.target;
 			if (!seeded) {
 				seed();
 				seeded = true;
 			}
-			if (step_mode) {
-				setTimeout(doGeneration, 1);
-			}  else {
-				// calculation_interval = setInterval(doGeneration, 100);
-				doGeneration();
-			}
+			doGeneration();
+			reportStats();
 			stats_interval = setInterval(reportStats,10000);
 		} else {
 			clearInterval(calculation_interval);
@@ -145,23 +131,20 @@ onmessage = function(e){
 			clearInterval(stats_interval);
 			stats_interval = null;
 		}
-  }
+  } else if (e.data.cmd === "stats and die") {
+		last_time = true;
+		reportStats();
+		close();
+	}
 };
 
 function seed() {
-	for (var i=0; i<generation_size; i++) {
+	for (var i=0; i<parameters.generation.size; i++) {
 		addChild(evaluate(generateRandomCode(250)));
 	}
 }
 
 function reportStats() {
 	var now = new Date().getTime();
-	postMessage({type:"stats",data: { generation_count: generation_count, entity_count: entity_count, elapsed: now - start_time, now: now } });
-}
-
-
-function doTest() {
-	var testCode = generateRandomCode(Math.floor(Math.random()*250));
-	bf_interpret(testCode,"");
-	console.log(Date());
+	postMessage({type:"stats",data: { generation_count: generation_count, entity_count: entity_count, elapsed: now - start_time, now: now, last_time: last_time} });
 }
