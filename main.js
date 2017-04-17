@@ -10,13 +10,13 @@ function GA() {
 
   this.startButton = document.getElementById("start_thread");
   this.startButton.addEventListener('click', this.startWorker.bind(this));
-
   this.stopButton = document.getElementById("stop_thread");
   this.stopButton.addEventListener('click', this.stopWorker.bind(this));
   this.stopWorker();
 
   this.configDisplay = document.getElementById("config");
   this.configsSelector = document.getElementById("config_selector");
+  this.configKeyDisplay = document.getElementById("config_key");
   this.configsSelector.addEventListener('change', this.onConfigChange.bind(this));
   this.configsRef = this.database.ref("configs");
   this.loadConfigs();
@@ -48,6 +48,7 @@ GA.prototype.loadConfigs = function() {
 };
 
 GA.prototype.onConfigChange = function() {
+  this.configKeyDisplay.innerHTML = this.configsSelector[this.configsSelector.selectedIndex].id;
   var v = this.configsSelector[this.configsSelector.selectedIndex].value;
   parameters = JSON.parse(v);
   this.configDisplay.innerHTML = `<pre> ${JSON.stringify(parameters,null,4)}</pre>`;
@@ -56,7 +57,6 @@ GA.prototype.onConfigChange = function() {
 GA.prototype.resetDisplayState = function() {
   columns = [ ['x'], ['fittest_ever'], ['fittest_now'], ['gps'], ['age']];
   fittest_objects = {}
-  fittest = Number.MAX_VALUE;
   fittest_now = { fitness: Number.MAX_VALUE};
   fittest_ever = { fitness: Number.MAX_VALUE};
   chart.load({columns:columns});
@@ -119,7 +119,6 @@ var parameters = {};
 var columns = [ ['x'], ['fittest_ever'], ['fittest_now'], ['gps'], ['age']];
 var chart;
 var fittest_objects = {}
-var fittest = Number.MAX_VALUE;
 var fittest_now = { fitness: Number.MAX_VALUE };
 var fittest_ever = { fitness: Number.MAX_VALUE };
 
@@ -246,8 +245,7 @@ function updateFittest(e) {
     fittest_now = JSON.parse(JSON.stringify(e[0]));
     if (fittest_now.fitness < fittest_ever.fitness) {
         fittest_ever = fittest_now;
-        fittest = fittest_ever.fitness;
-        document.title = parameters.goal.target + " : " + fittest;
+        document.title = parameters.goal.target + " : " + fittest_ever.fitness;
     }
 
     // stop if we match
