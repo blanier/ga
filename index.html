@@ -3,28 +3,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>JS BF - </title>
-
-    <link href="bower_components/c3/c3.css" rel="stylesheet" type="text/css">
-    <script src="bower_components/d3/d3.js" charset="utf-8"></script>
-    <script src="bower_components/c3/c3.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="style.css" />
-
-    <script src="https://www.gstatic.com/firebasejs/3.7.6/firebase.js"></script>
-    <script>
-      // Initialize Firebase
-      var firebaseConfig = {
-        apiKey: "AIzaSyB1V68Bk8RJ5qwvRgq6KcN57baOzK_s0cg",
-        authDomain: "bf-genetic.firebaseapp.com",
-        databaseURL: "https://bf-genetic.firebaseio.com",
-        projectId: "bf-genetic",
-        storageBucket: "bf-genetic.appspot.com",
-        messagingSenderId: "489177475195"
-      };
-      firebase.initializeApp(firebaseConfig);
-    </script>
-
-    <script src="main.js"></script>
   </head>
   <body>
     <div id="PopulationControl">
@@ -44,5 +22,27 @@
       <select id="config_selector"></select>
       <span id="config_key"></span>
       <div id="config"></div>
+
+      <link href="bower_components/c3/c3.css" rel="stylesheet" type="text/css">
+      <script src="bower_components/d3/d3.js" charset="utf-8"></script>
+      <script src="bower_components/c3/c3.js"></script>
+
+      <link rel="stylesheet" type="text/css" href="style.css" />
+
+      <script src="https://www.gstatic.com/firebasejs/3.7.6/firebase.js"></script>
+      <script>
+        // Initialize Firebase
+        var firebaseConfig = {
+          apiKey: "AIzaSyB1V68Bk8RJ5qwvRgq6KcN57baOzK_s0cg",
+          authDomain: "bf-genetic.firebaseapp.com",
+          databaseURL: "https://bf-genetic.firebaseio.com",
+          projectId: "bf-genetic",
+          storageBucket: "bf-genetic.appspot.com",
+          messagingSenderId: "489177475195"
+        };
+        firebase.initializeApp(firebaseConfig);
+      </script>
+
+      <script src="main.js"></script>
   </body>
 </html>

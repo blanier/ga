@@ -39,7 +39,7 @@ GA.prototype.loadConfigs = function() {
     o.value = JSON.stringify(val);
     o.id = data.key;
     this.configsSelector.add(o);
-    if (first) { this.onConfigChange() }
+    if (first) { this.onConfigChange(); this.startWorker(); }
   }.bind(this);
 
   // Listen for changes
@@ -48,10 +48,12 @@ GA.prototype.loadConfigs = function() {
 };
 
 GA.prototype.onConfigChange = function() {
-  this.configKeyDisplay.innerHTML = this.configsSelector[this.configsSelector.selectedIndex].id;
+  let key = this.configsSelector[this.configsSelector.selectedIndex].id;
+  this.configKeyDisplay.innerHTML = key;
   var v = this.configsSelector[this.configsSelector.selectedIndex].value;
   parameters = JSON.parse(v);
   this.configDisplay.innerHTML = `<pre> ${JSON.stringify(parameters,null,4)}</pre>`;
+  this.runsRef = this.database.ref(`runs/${key}`);
 }
 
 GA.prototype.resetDisplayState = function() {
@@ -237,7 +239,7 @@ function displayStats(s) {
     if (s.last_time) {
       window.GA.stopWorker();
       console.log("REORT TO FIREBASE");
-      console.log(s);
+      window.GA.runsRef.push(s);
     }
 }
 
