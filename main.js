@@ -3,10 +3,22 @@
 /*eslint no-console:off*/
 
 
+var booleans = ["auto_run", "loop"];
+
 // Initialze GA
 function GA() {
   this.checkSetup();
   this.initFirebase();
+
+  for (var i in booleans) {
+    var key = booleans[i];
+    var val = JSON.parse(localStorage.getItem(key));
+    console.log(`${key} is ${val}`);
+
+    var checkbox = document.getElementById(key);
+    checkbox.checked = val;
+    checkbox.addEventListener("change", this.handleCheckbox.bind(this));
+  }
 
   this.startButton = document.getElementById("start_thread");
   this.startButton.addEventListener('click', this.startWorker.bind(this));
@@ -21,6 +33,7 @@ function GA() {
   this.configsRef = this.database.ref("configs");
   this.loadConfigs();
 }
+
 
 // Loads chat messages history and listens for upcoming ones.
 GA.prototype.loadConfigs = function() {
@@ -39,7 +52,12 @@ GA.prototype.loadConfigs = function() {
     o.value = JSON.stringify(val);
     o.id = data.key;
     this.configsSelector.add(o);
-    if (first) { this.onConfigChange(); this.startWorker(); }
+    if (first) {
+      this.onConfigChange();
+      if (JSON.parse(localStorage.getItem("auto_run"))) {
+        this.startWorker();
+      }
+    }
   }.bind(this);
 
   // Listen for changes
@@ -54,6 +72,14 @@ GA.prototype.onConfigChange = function() {
   parameters = JSON.parse(v);
   this.configDisplay.innerHTML = `<pre> ${JSON.stringify(parameters,null,4)}</pre>`;
   this.runsRef = this.database.ref(`runs/${key}`);
+}
+
+GA.prototype.handleCheckbox = function(e) {
+  let checked = e.srcElement.checked;
+  let key = e.srcElement.id;
+  console.log(checked);
+  window.GA[key] = checked;
+  localStorage.setItem(key, checked);
 }
 
 GA.prototype.resetDisplayState = function() {
@@ -238,8 +264,10 @@ function displayStats(s) {
 
     if (s.last_time) {
       window.GA.stopWorker();
-      console.log("REORT TO FIREBASE");
       window.GA.runsRef.push(s);
+      if (JSON.parse(localStorage.getItem("loop"))) {
+        window.GA.startWorker();
+      }
     }
 }
 
